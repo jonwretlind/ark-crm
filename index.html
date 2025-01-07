@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html ng-app="arkCRM">
+<head>
+    <title>Ark CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.2.1/angular-material.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body ng-controller="MainController">
+    <div class="crm-container">
+        <div class="sidenav neumorphic">
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <img src="./assets/images/The-ARK-Logo-Thumbnail.png" alt="The ARK Logo" class="ark-logo">
+                </div>
+            </div>
+            <md-list>
+                <md-list-item ng-click="setView('dashboard')" ng-class="{active: currentView === 'dashboard'}">
+                    <md-icon class="material-icons">dashboard</md-icon>
+                    <p>Dashboard</p>
+                </md-list-item>
+                <md-list-item ng-click="setView('lists')" ng-class="{active: currentView === 'lists'}">
+                    <md-icon class="material-icons">format_list_bulleted</md-icon>
+                    <p>Manage Lists</p>
+                </md-list-item>
+                <md-list-item ng-click="setView('campaigns')" ng-class="{active: currentView === 'campaigns'}">
+                    <md-icon class="material-icons">campaign</md-icon>
+                    <p>Manage Campaigns</p>
+                </md-list-item>
+                <md-list-item ng-click="setView('analytics')" ng-class="{active: currentView === 'analytics'}">
+                    <md-icon class="material-icons">analytics</md-icon>
+                    <p>Analytics</p>
+                </md-list-item>
+                <md-list-item ng-click="setView('ledger')" ng-class="{active: currentView === 'ledger'}">
+                    <md-icon class="material-icons">account_balance</md-icon>
+                    <p>Program Fees</p>
+                </md-list-item>
+            </md-list>
+        </div>
+
+        <div class="main-content">
+            <md-toolbar class="toolbar-glassmorphic">
+                <div class="md-toolbar-tools">
+                    <h2 class="app-title">Ark Relationship Management</h2>
+                    <span flex></span>
+                    <md-button class="md-fab md-primary" ng-click="createNewContact()">
+                        <md-icon>add</md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <!-- Add Ledger View -->
+            <div ng-if="currentView === 'ledger'" class="ledger-view">
+                <md-card class="neumorphic">
+                    <md-card-title>
+                        <md-card-title-text>
+                            <span class="md-headline">Program Fee Ledger</span>
+                        </md-card-title-text>
+                        <div class="ledger-actions">
+                            <md-button class="md-raised md-primary" ng-click="recordPayment()">
+                                <md-icon>add</md-icon>
+                                Record Payment
+                            </md-button>
+                            <md-select ng-model="ledgerView" 
+                                     placeholder="View" 
+                                     class="md-no-underline"
+                                     ng-change="handleLedgerViewChange()">
+                                <md-option value="all">All Payments</md-option>
+                                <md-option value="resident">By Resident</md-option>
+                                <md-option value="overdue">Overdue Payments</md-option>
+                            </md-select>
+                        </div>
+                    </md-card-title>
+                    <md-card-content>
+                        <!-- All Payments View -->
+                        <div ng-if="ledgerView === 'all'" class="ledger-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Resident Name</th>
+                                        <th>Program Fee</th>
+                                        <th>Amount Paid</th>
+                                        <th>Method</th>
+                                        <th>Period Start</th>
+                                        <th>Period End</th>
+                                        <th>Balance</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="payment in payments | orderBy:'-date'">
+                                        <td>{{payment.date | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{payment.residentName}}</td>
+                                        <td>{{payment.programFee | currency}}</td>
+                                        <td>{{payment.amount | currency}}</td>
+                                        <td>{{payment.method}}</td>
+                                        <td>{{payment.periodStart | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{payment.periodEnd | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{payment.balance | currency}}</td>
+                                        <td>{{payment.notes}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- By Resident View -->
+                        <div ng-if="ledgerView === 'resident'" class="resident-ledger">
+                            <md-select ng-model="selectedResident" 
+                                     placeholder="Select Resident"
+                                     class="resident-select"
+                                     ng-change="handleResidentChange(selectedResident)">
+                                <md-option ng-repeat="resident in residents track by resident._id" 
+                                         ng-value="resident">
+                                    {{resident.firstName}} {{resident.lastName}}
+                                </md-option>
+                            </md-select>
+                            
+                            <div class="resident-summary" ng-if="selectedResident">
+                                <div class="summary-card">
+                                    <h3>Program Fee</h3>
+                                    <div class="amount">{{getResidentProgramFee() | currency}}</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Last Payment</h3>
+                                    <div class="amount" ng-if="getLastPayment()">
+                                        {{getLastPayment().amount | currency}}
+                                        <div class="payment-date">{{getLastPayment().date | date:'MM/dd/yyyy'}}</div>
+                                    </div>
+                                    <div class="amount" ng-if="!getLastPayment()">No payments</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Current Balance</h3>
+                                    <div class="amount" ng-class="{'text-danger': getResidentBalance() > 0}">
+                                        {{getResidentBalance() | currency}}
+                                    </div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Next Payment Due</h3>
+                                    <div class="date">{{getNextPaymentDue() | date:'MM/dd/yyyy'}}</div>
+                                    <div class="status" 
+                                         ng-class="{
+                                             'status-on-time': getPaymentStatus() === 'On Time',
+                                             'status-late': getPaymentStatus() === 'Late',
+                                             'status-critical': getPaymentStatus() === '>30 Days Late'
+                                         }">
+                                        {{getPaymentStatus()}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-history" ng-if="selectedResident">
+                                <h3>Payment History</h3>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Program Fee</th>
+                                            <th>Amount Paid</th>
+                                            <th>Method</th>
+                                            <th>Period Start</th>
+                                            <th>Period End</th>
+                                            <th>Balance</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="payment in residentPayments">
+                                            <td>{{payment.date | date:'MM/dd/yyyy'}}</td>
+                                            <td>{{payment.programFee | currency}}</td>
+                                            <td>{{payment.amount | currency}}</td>
+                                            <td>{{payment.method}}</td>
+                                            <td>{{payment.periodStart | date:'MM/dd/yyyy'}}</td>
+                                            <td>{{payment.periodEnd | date:'MM/dd/yyyy'}}</td>
+                                            <td>{{payment.balance | currency}}</td>
+                                            <td>{{payment.notes}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Overdue Payments View -->
+                        <div ng-if="ledgerView === 'overdue'" class="overdue-payments">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Resident</th>
+                                        <th>Program Fee</th>
+                                        <th>Days Overdue</th>
+                                        <th>Last Payment Date</th>
+                                        <th>Last Payment Amount</th>
+                                        <th>Current Balance</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="overdue in overduePayments">
+                                        <td>{{overdue.residentName}}</td>
+                                        <td>{{overdue.programFee | currency}}</td>
+                                        <td>{{overdue.daysOverdue}}</td>
+                                        <td>{{overdue.lastPayment | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{overdue.lastPaymentAmount | currency}}</td>
+                                        <td>{{overdue.balance | currency}}</td>
+                                        <td>
+                                            <md-button class="md-raised" ng-click="recordPayment(overdue.residentId)">
+                                                Record Payment
+                                            </md-button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </md-card-content>
+                </md-card>
+            </div>
+
+            <div class="dashboard-content" ng-if="currentView === 'dashboard'">
+                <div class="left-panel">
+                    <md-card class="stats-card neumorphic">
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-headline">Contact Distribution</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-content>
+                            <div class="stats-grid">
+                                <div class="stat-card clickable" 
+                                     ng-repeat="type in sortedTypes()"
+                                     ng-click="setFilterType(type)"
+                                     ng-class="{active: isActiveFilter(type)}">
+                                    <div class="stat-icon">
+                                        <md-icon class="material-icons">{{getIconForType(type)}}</md-icon>
+                                    </div>
+                                    <div class="stat-info">
+                                        <div class="stat-count">{{stats[type]}}</div>
+                                        <div class="stat-label">{{getTypeLabel(type)}}</div>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-bar-fill" ng-style="getBarStyle(stats[type])"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </md-card-content>
+                    </md-card>
+                    <div class="resizer"></div>
+                </div>
+                <div class="right-panel">
+                    <md-card class="contact-list neumorphic">
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-headline">
+                                    {{filterType || 'All'}} Contacts
+                                    <span class="contact-count">
+                                        ({{(contacts | filter:{type:filterType}).length}} total)
+                                    </span>
+                                </span>
+                            </md-card-title-text>
+                            <div class="sort-controls">
+                                <span>Sort by:</span>
+                                <md-select ng-model="sortConfig.field" 
+                                         ng-change="updateSort()"
+                                         class="primary-sort">
+                                    <md-option ng-repeat="field in sortFields" 
+                                             ng-value="field.value">
+                                        {{field.label}}
+                                    </md-option>
+                                </md-select>
+                                <span ng-if="sortConfig.field === 'organization.name' || sortConfig.field === 'type'">
+                                    then by:
+                                    <md-select ng-model="sortConfig.secondaryField" 
+                                             ng-change="updateSort()"
+                                             class="secondary-sort">
+                                        <md-option ng-repeat="field in secondarySortFields" 
+                                                 ng-value="field.value">
+                                            {{field.label}}
+                                        </md-option>
+                                    </md-select>
+                                </span>
+                                <md-button class="md-icon-button" ng-click="toggleSortOrder()">
+                                    <md-icon class="material-icons">
+                                        {{sortConfig.ascending ? 'arrow_upward' : 'arrow_downward'}}
+                                    </md-icon>
+                                </md-button>
+                            </div>
+                        </md-card-title>
+                        <md-card-content>
+                            <div class="pagination-controls top" ng-if="getTotalPages() > 1">
+                                <div class="page-nav">
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(1)"
+                                        ng-disabled="pagination.currentPage === 1">
+                                        <md-icon class="material-icons">first_page</md-icon>
+                                    </md-button>
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(pagination.currentPage - 1)"
+                                        ng-disabled="pagination.currentPage === 1">
+                                        <md-icon class="material-icons">chevron_left</md-icon>
+                                    </md-button>
+                                    <span class="page-info">
+                                        <span class="page-number" 
+                                            ng-repeat="page in getPageNumbers()"
+                                            ng-class="{active: page === pagination.currentPage, ellipsis: page === '...'}"
+                                            ng-click="page !== '...' && setPage(page)">
+                                            {{page}}
+                                        </span>
+                                    </span>
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(pagination.currentPage + 1)"
+                                        ng-disabled="pagination.currentPage === getTotalPages()">
+                                        <md-icon class="material-icons">chevron_right</md-icon>
+                                    </md-button>
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(getTotalPages())"
+                                        ng-disabled="pagination.currentPage === getTotalPages()">
+                                        <md-icon class="material-icons">last_page</md-icon>
+                                    </md-button>
+                                </div>
+                                <div class="page-size">
+                                    <span>Show:</span>
+                                    <md-select ng-model="pagination.pageSize" ng-change="setPage(1)">
+                                        <md-option ng-value="25">25</md-option>
+                                        <md-option ng-value="50">50</md-option>
+                                        <md-option ng-value="100">100</md-option>
+                                    </md-select>
+                                </div>
+                            </div>
+                            <md-list>
+                                <md-list-item ng-repeat="contact in getPaginatedContacts()">
+                                    <div class="md-list-item-text" ng-click="showContactDetails(contact)">
+                                        <div class="contact-info">
+                                            <h3>
+                                                <span ng-if="sortConfig.field === 'lastName' || sortConfig.secondaryField === 'lastName'">
+                                                    {{contact.lastName}}, {{contact.firstName}}
+                                                </span>
+                                                <span ng-if="sortConfig.field !== 'lastName' && sortConfig.secondaryField !== 'lastName'">
+                                                    {{contact.firstName}} {{contact.lastName}}
+                                                </span>
+                                            </h3>
+                                            <h4>{{contact.organization.name}}</h4>
+                                            <p>{{contact.contact.email}}</p>
+                                            <p>{{contact.contact.phone}}</p>
+                                        </div>
+                                        <div class="contact-meta">
+                                            <div class="contact-meta-info">
+                                                <span class="contact-type">{{contact.type}}</span>
+                                                <span class="contact-status" ng-class="contact.status.toLowerCase()">{{contact.status}}</span>
+                                            </div>
+                                            <div class="contact-actions">
+                                                <button class="md-button delete-button" ng-click="deleteContact(contact, $event)">
+                                                    <md-icon>delete</md-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </md-list-item>
+                            </md-list>
+                            <div class="pagination-controls bottom" ng-if="getTotalPages() > 1">
+                                <div class="page-nav">
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(1)"
+                                        ng-disabled="pagination.currentPage === 1">
+                                        <md-icon class="material-icons">first_page</md-icon>
+                                    </md-button>
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(pagination.currentPage - 1)"
+                                        ng-disabled="pagination.currentPage === 1">
+                                        <md-icon class="material-icons">chevron_left</md-icon>
+                                    </md-button>
+                                    <span class="page-info">
+                                        <span class="page-number" 
+                                            ng-repeat="page in getPageNumbers()"
+                                            ng-class="{active: page === pagination.currentPage, ellipsis: page === '...'}"
+                                            ng-click="page !== '...' && setPage(page)">
+                                            {{page}}
+                                        </span>
+                                    </span>
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(pagination.currentPage + 1)"
+                                        ng-disabled="pagination.currentPage === getTotalPages()">
+                                        <md-icon class="material-icons">chevron_right</md-icon>
+                                    </md-button>
+                                    <md-button 
+                                        class="md-icon-button"
+                                        ng-click="setPage(getTotalPages())"
+                                        ng-disabled="pagination.currentPage === getTotalPages()">
+                                        <md-icon class="material-icons">last_page</md-icon>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </md-card-content>
+                    </md-card>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Angular Dependencies -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.2.1/angular-material.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/controllers/mainController.js"></script>
+    <script src="js/services/contactService.js"></script>
+
+    <!-- Contact Details Modal Template -->
+    <script type="text/ng-template" id="contact-details-modal.html">
+        <md-dialog aria-label="Contact Details" class="contact-details-dialog">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Contact Details</h2>
+                    <span flex></span>
+                    <md-button class="md-icon-button" ng-click="cancel()">
+                        <md-icon class="material-icons">close</md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <md-dialog-content>
+                <div class="md-dialog-content">
+                    <!-- Payment History View -->
+                    <div ng-if="showingPayments" class="payment-history-view">
+                        <div class="payment-history-header">
+                            <md-button class="md-icon-button" ng-click="backToDetails()">
+                                <md-icon>arrow_back</md-icon>
+                            </md-button>
+                            <h2>Payment History for {{contact.firstName}} {{contact.lastName}}</h2>
+                        </div>
+
+                        <!-- Payment Summary Cards -->
+                        <div class="resident-summary">
+                            <div class="summary-card">
+                                <h3>Program Fee</h3>
+                                <div class="amount">{{programFee | currency}}</div>
+                            </div>
+                            <div class="summary-card">
+                                <h3>Last Payment</h3>
+                                <div class="amount" ng-if="lastPayment">
+                                    {{lastPayment.amount | currency}}
+                                    <div class="payment-date">{{lastPayment.date | date:'MM/dd/yyyy'}}</div>
+                                </div>
+                                <div class="amount" ng-if="!lastPayment">No payments</div>
+                            </div>
+                            <div class="summary-card">
+                                <h3>Current Balance</h3>
+                                <div class="amount" ng-class="{'text-danger': balance > 0}">
+                                    {{balance | currency}}
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <h3>Next Payment Due</h3>
+                                <div class="date">{{nextPaymentDue | date:'MM/dd/yyyy'}}</div>
+                                <div class="status" 
+                                     ng-class="{
+                                         'status-on-time': paymentStatus === 'On Time',
+                                         'status-late': paymentStatus === 'Late',
+                                         'status-critical': paymentStatus === '>30 Days Late'
+                                     }">
+                                    {{paymentStatus}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment History Table -->
+                        <div class="payment-history-table">
+                            <h3>Payment History</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Program Fee</th>
+                                        <th>Amount Paid</th>
+                                        <th>Method</th>
+                                        <th>Period Start</th>
+                                        <th>Period End</th>
+                                        <th>Balance</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="payment in payments">
+                                        <td>{{payment.date | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{payment.programFee | currency}}</td>
+                                        <td>{{payment.amount | currency}}</td>
+                                        <td>{{payment.method}}</td>
+                                        <td>{{payment.periodStart | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{payment.periodEnd | date:'MM/dd/yyyy'}}</td>
+                                        <td>{{payment.balance | currency}}</td>
+                                        <td>{{payment.notes}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Regular Contact Details View -->
+                    <div ng-if="!showingPayments">
+                        <!-- Existing contact details content -->
+                        <div class="contact-header">
+                            <div class="contact-name">
+                                <div ng-if="!isEditing">
+                                    <h2>{{contact.firstName}} {{contact.lastName}}</h2>
+                                </div>
+                                <div ng-if="isEditing" class="edit-name-fields">
+                                    <md-input-container>
+                                        <label>First Name</label>
+                                        <input ng-model="editableContact.firstName">
+                                    </md-input-container>
+                                    <md-input-container>
+                                        <label>Last Name</label>
+                                        <input ng-model="editableContact.lastName">
+                                    </md-input-container>
+                                </div>
+                                <span class="contact-type">{{contact.type}}</span>
+                                <span class="contact-status" ng-class="contact.status.toLowerCase()">
+                                    {{contact.status}}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="contact-sections">
+                            <section class="contact-section organization" 
+                                    ng-if="!['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type) && 
+                                          ['Donor', 'ReferralSource', 'Partner'].includes(contact.type)">
+                                <h3>Organization</h3>
+                                <div class="info-row">
+                                    <label>Name:</label>
+                                    <span ng-if="!isEditing">{{contact.organization.name}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input ng-model="editableContact.organization.name">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row">
+                                    <label>Role:</label>
+                                    <span ng-if="!isEditing">{{contact.organization.role}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input ng-model="editableContact.organization.role">
+                                    </md-input-container>
+                                </div>
+                            </section>
+
+                            <section class="contact-section contact-info">
+                                <h3>Contact Information</h3>
+                                <div class="info-row">
+                                    <label><md-icon>email</md-icon> Email:</label>
+                                    <span ng-if="!isEditing">{{contact.contact.email}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input type="email" ng-model="editableContact.contact.email">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row">
+                                    <label><md-icon>phone</md-icon> Phone:</label>
+                                    <span ng-if="!isEditing">{{contact.contact.phone}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input ng-model="editableContact.contact.phone">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row" ng-if="contact.contact.address">
+                                    <label><md-icon>location_on</md-icon> Address:</label>
+                                    <span ng-if="!isEditing">{{contact.contact.address}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <textarea ng-model="editableContact.contact.address"></textarea>
+                                    </md-input-container>
+                                </div>
+                            </section>
+
+                            <!-- Emergency Contact Section (For all resident types) -->
+                            <section class="contact-section emergency-contact" 
+                                    ng-if="['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type)">
+                                <h3>Emergency Contact</h3>
+                                <div class="info-row">
+                                    <label>Name:</label>
+                                    <span ng-if="!isEditing">{{contact.emergencyContact.name}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input ng-model="editableContact.emergencyContact.name">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row">
+                                    <label>Relationship:</label>
+                                    <span ng-if="!isEditing">{{contact.emergencyContact.relationship}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input ng-model="editableContact.emergencyContact.relationship">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row">
+                                    <label><md-icon>phone</md-icon> Phone:</label>
+                                    <span ng-if="!isEditing">{{contact.emergencyContact.phone}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input type="tel" ng-model="editableContact.emergencyContact.phone">
+                                    </md-input-container>
+                                </div>
+                            </section>
+
+                            <!-- Residency Details Section (Only for current Residents) -->
+                            <section class="contact-section residency-details" 
+                                    ng-if="['Resident', 'PastResident'].includes(contact.type)">
+                                <h3>Residency Details</h3>
+                                <div class="info-row">
+                                    <label>Move-In Date:</label>
+                                    <span ng-if="!isEditing">{{contact.residencyDetails.moveInDate | date:'MM/dd/yyyy'}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input type="date" ng-model="editableContact.residencyDetails.moveInDate">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row has-late-status">
+                                    <label>Program Fees Paid Until:</label>
+                                    <span ng-if="!isEditing">
+                                        {{contact.residencyDetails.programFeesPaidUntil | date:'MM/dd/yyyy'}}
+                                        <span class="late-status" 
+                                              ng-if="getDaysLate(contact.residencyDetails.programFeesPaidUntil) > 15"
+                                              ng-class="{'critical': getDaysLate(contact.residencyDetails.programFeesPaidUntil) >= 30}">
+                                            {{getDaysLate(contact.residencyDetails.programFeesPaidUntil)}} Days Late
+                                        </span>
+                                    </span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input type="date" ng-model="editableContact.residencyDetails.programFeesPaidUntil">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row">
+                                    <label>Program Balance:</label>
+                                    <span ng-if="!isEditing">{{contact.residencyDetails.programBalance | currency}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input type="number" step="0.01" ng-model="editableContact.residencyDetails.programBalance">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row">
+                                    <label>Discipler:</label>
+                                    <span ng-if="!isEditing">{{contact.residencyDetails.discipler}}</span>
+                                    <md-input-container ng-if="isEditing">
+                                        <input ng-model="editableContact.residencyDetails.discipler">
+                                    </md-input-container>
+                                </div>
+                                <div class="info-row payment-details-action">
+                                    <md-button class="md-raised md-primary" ng-click="viewPaymentDetails(contact)">
+                                        <md-icon>account_balance</md-icon>
+                                        View Payment Details
+                                    </md-button>
+                                </div>
+                            </section>
+
+                            <!-- Comments Section (replacing Notes for all resident types) -->
+                            <section class="contact-section notes-section">
+                                <h3>{{['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type) ? 'Comments' : 'Notes'}}</h3>
+                                <div class="info-row notes">
+                                    <span ng-if="!isEditing">{{['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type) ? contact.residencyDetails.comments : contact.notes || 'No notes added yet.'}}</span>
+                                    <md-input-container ng-if="isEditing" class="full-width">
+                                        <textarea ng-model="editableContact.residencyDetails.comments" rows="4" ng-if="['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type)"></textarea>
+                                        <textarea ng-model="editableContact.notes" rows="4" ng-if="!['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type)"></textarea>
+                                    </md-input-container>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </md-dialog-content>
+
+            <md-dialog-actions layout="row" ng-if="!showingPayments">
+                <md-button class="md-warn delete-button" ng-click="delete()">
+                    <md-icon>delete</md-icon>
+                    Delete Contact
+                </md-button>
+                <md-button class="md-primary" ng-click="edit()" ng-if="!isEditing">
+                    Edit Contact
+                </md-button>
+                <md-button class="md-primary" ng-click="save()" ng-if="isEditing">
+                    <md-icon>save</md-icon>
+                    Save
+                </md-button>
+                <md-button ng-click="cancelEdit()" ng-if="isEditing">
+                    Cancel
+                </md-button>
+                <span flex></span>
+                <md-button ng-click="cancel()" ng-if="!isEditing">Close</md-button>
+            </md-dialog-actions>
+        </md-dialog>
+    </script>
+
+    <!-- New Contact Modal Template -->
+    <script type="text/ng-template" id="new-contact-modal.html">
+        <md-dialog aria-label="New Contact" class="contact-details-dialog">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>New Contact</h2>
+                    <span flex></span>
+                    <md-button class="md-icon-button" ng-click="cancel()">
+                        <md-icon class="material-icons">close</md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <md-dialog-content>
+                <div class="md-dialog-content">
+                    <div class="contact-sections">
+                        <section class="contact-section contact-info">
+                            <h3>Contact Information</h3>
+                            <div class="edit-name-fields">
+                                <md-input-container>
+                                    <label>First Name</label>
+                                    <input ng-model="newContact.firstName" required>
+                                </md-input-container>
+                                <md-input-container>
+                                    <label>Last Name</label>
+                                    <input ng-model="newContact.lastName" required>
+                                </md-input-container>
+                            </div>
+                            <div class="contact-type-status">
+                                <md-input-container class="select-container">
+                                    <label>Type</label>
+                                    <select ng-model="newContact.type" 
+                                            required 
+                                            class="select-input"
+                                            ng-change="handleTypeChange()">
+                                        <option value="">Select a type</option>
+                                        <option ng-repeat="type in contactTypes"
+                                                ng-value="type.value">
+                                            {{type.label}}
+                                        </option>
+                                    </select>
+                                </md-input-container>
+                                <md-input-container class="select-container">
+                                    <label>Status</label>
+                                    <select ng-model="newContact.status" 
+                                            required 
+                                            class="select-input">
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </md-input-container>
+                            </div>
+                            <md-input-container class="full-width">
+                                <label>Email</label>
+                                <input type="email" ng-model="newContact.contact.email" required>
+                            </md-input-container>
+                            <md-input-container class="full-width">
+                                <label>Phone</label>
+                                <input type="tel" ng-model="newContact.contact.phone">
+                            </md-input-container>
+                            <md-input-container class="full-width">
+                                <label>Address</label>
+                                <textarea ng-model="newContact.contact.address"></textarea>
+                            </md-input-container>
+                        </section>
+
+                        <section class="contact-section organization" 
+                                ng-if="!['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(newContact.type) && 
+                                      ['Donor', 'ReferralSource', 'Partner'].includes(newContact.type)">
+                            <h3>Organization</h3>
+                            <md-input-container class="full-width">
+                                <label>Organization Name</label>
+                                <input ng-model="newContact.organization.name">
+                            </md-input-container>
+                            <md-input-container class="full-width">
+                                <label>Role</label>
+                                <input ng-model="newContact.organization.role">
+                            </md-input-container>
+                        </section>
+
+                        <!-- Residency Details Section -->
+                        <section class="contact-section residency-details" 
+                                ng-if="newContact.type === 'Resident'">
+                            <h3>Residency Details</h3>
+                            <div class="edit-fields">
+                                <md-input-container class="full-width">
+                                    <label>Move-In Date</label>
+                                    <input type="date" ng-model="newContact.residencyDetails.moveInDate">
+                                </md-input-container>
+                                <md-input-container class="full-width">
+                                    <label>Program Fee</label>
+                                    <input type="number" step="0.01" ng-model="newContact.residencyDetails.programFee" placeholder="850">
+                                </md-input-container>
+                                <md-input-container class="full-width">
+                                    <label>Program Fees Paid Until</label>
+                                    <input type="date" ng-model="newContact.residencyDetails.programFeesPaidUntil">
+                                </md-input-container>
+                                <md-input-container class="full-width">
+                                    <label>Program Balance</label>
+                                    <input type="number" step="0.01" ng-model="newContact.residencyDetails.programBalance">
+                                </md-input-container>
+                                <md-input-container class="full-width">
+                                    <label>Discipler</label>
+                                    <input ng-model="newContact.residencyDetails.discipler">
+                                </md-input-container>
+                            </div>
+                        </section>
+
+                        <!-- Pipeline Actions Section -->
+                        <section class="contact-section pipeline-actions" 
+                                ng-if="newContact.type === 'ResidentPipeline'">
+                            <h3>Pipeline Actions</h3>
+                            <div class="action-buttons">
+                                <md-button class="md-raised md-primary" ng-click="convertToResident()">
+                                    <md-icon>check_circle</md-icon>
+                                    Convert to Resident
+                                </md-button>
+                                <md-button class="md-raised md-warn" ng-click="markAsDeclined()">
+                                    <md-icon>cancel</md-icon>
+                                    Mark as Declined
+                                </md-button>
+                            </div>
+                        </section>
+
+                        <section class="contact-section notes-section">
+                            <h3>{{newContact.type === 'Resident' ? 'Comments' : 'Notes'}}</h3>
+                            <md-input-container class="full-width">
+                                <textarea ng-model="newContact.notes" rows="4" placeholder="Add notes..."></textarea>
+                            </md-input-container>
+                        </section>
+                    </div>
+                </div>
+            </md-dialog-content>
+
+            <md-dialog-actions layout="row">
+                <span flex></span>
+                <md-button ng-click="cancel()">Cancel</md-button>
+                <md-button class="md-primary" ng-click="save()" ng-disabled="!isValid()">
+                    Create Contact
+                </md-button>
+            </md-dialog-actions>
+        </md-dialog>
+    </script>
+
+    <!-- Record Payment Modal Template -->
+    <script type="text/ng-template" id="record-payment-modal.html">
+        <md-dialog aria-label="Record Payment" class="payment-dialog">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Record Program Fee Payment</h2>
+                    <span flex></span>
+                    <md-button class="md-icon-button" ng-click="cancel()">
+                        <md-icon class="material-icons">close</md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <md-dialog-content>
+                <div class="md-dialog-content">
+                    <div class="payment-form">
+                        <md-input-container class="full-width" ng-if="!residentId">
+                            <label>Resident</label>
+                            <md-select ng-model="payment.residentId" required>
+                                <md-option ng-repeat="resident in residents" ng-value="resident._id">
+                                    {{resident.firstName}} {{resident.lastName}}
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+
+                        <div class="payment-details">
+                            <md-input-container class="full-width">
+                                <label>Payment Date</label>
+                                <input type="date" ng-model="payment.date" required>
+                            </md-input-container>
+
+                            <md-input-container class="full-width">
+                                <label>Amount</label>
+                                <input type="number" step="0.01" ng-model="payment.amount" required>
+                            </md-input-container>
+
+                            <md-input-container class="full-width">
+                                <label>Payment Type</label>
+                                <md-select ng-model="payment.paymentType" required>
+                                    <md-option value="cash">Cash</md-option>
+                                    <md-option value="check">Check</md-option>
+                                    <md-option value="card">Credit/Debit Card</md-option>
+                                    <md-option value="transfer">Bank Transfer</md-option>
+                                </md-select>
+                            </md-input-container>
+
+                            <div class="period-covered">
+                                <md-input-container>
+                                    <label>Period Start</label>
+                                    <input type="date" ng-model="payment.periodStart" required>
+                                </md-input-container>
+
+                                <md-input-container>
+                                    <label>Period End</label>
+                                    <input type="date" ng-model="payment.periodEnd" required>
+                                </md-input-container>
+                            </div>
+
+                            <md-input-container class="full-width">
+                                <label>Notes</label>
+                                <textarea ng-model="payment.notes" rows="2"></textarea>
+                            </md-input-container>
+                        </div>
+                    </div>
+                </div>
+            </md-dialog-content>
+
+            <md-dialog-actions layout="row">
+                <span flex></span>
+                <md-button ng-click="cancel()">Cancel</md-button>
+                <md-button class="md-primary md-raised" ng-click="save()" ng-disabled="!isValid()">
+                    Record Payment
+                </md-button>
+            </md-dialog-actions>
+        </md-dialog>
+    </script>
+</body>
+</html> 

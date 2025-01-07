@@ -1,0 +1,1657 @@
+body {
+    background: linear-gradient(
+        rgba(244, 247, 244, 0.95), 
+        rgba(232, 239, 232, 0.5)
+    ), url('../assets/images/house.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    height: unset;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.crm-container {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.sidenav {
+    width: 250px;
+    min-height: calc(100vh - 40px);
+    border-radius: 30px;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+.logo-container {
+    padding: 12px;
+    background: linear-gradient(to right, #2c5530, #1e3b21);
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logo-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.ark-logo {
+    width: 140px;
+    height: auto;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    filter: brightness(0) invert(1);
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.toolbar-glassmorphic {
+    background: transparent !important;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.toolbar-glassmorphic .md-toolbar-tools {
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+}
+
+.toolbar-glassmorphic .md-toolbar-tools h2.app-title {
+    color: #2c5530 !important;
+    font-size: 1.5rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 1px;
+    margin: 0;
+    padding: 16px 0;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(44, 85, 48, 0.1);
+    line-height: 1.2 !important;
+    font-family: 'Noto Sans', sans-serif !important;
+}
+
+.neumorphic {
+    border-radius: 20px;
+    background: rgba(244, 247, 244, 0.65);
+    margin: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.neumorphic:hover {
+    background: rgba(244, 247, 244, 0.75);
+}
+
+.sidenav md-list-item {
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-left: 4px solid transparent;
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.sidenav md-list-item .material-icons {
+    margin-right: 16px;
+    color: #2c5530;
+    transition: color 0.3s ease;
+    font-size: 20px;
+}
+
+.sidenav md-list-item p {
+    margin: 0;
+    flex: 1;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.sidenav md-list-item:hover .material-icons {
+    color: #d35400;
+}
+
+.sidenav md-list-item:hover {
+    background-color: rgba(44, 85, 48, 0.1);
+    border-left-color: #d35400;
+}
+
+/* Active state for navigation items */
+.sidenav md-list-item.active {
+    background-color: rgba(44, 85, 48, 0.1);
+    border-left-color: #2c5530;
+}
+
+.sidenav md-list-item.active .material-icons,
+.sidenav md-list-item.active p {
+    color: #2c5530;
+}
+
+.dashboard-content {
+    display: grid;
+    grid-template-columns: minmax(300px, 2fr) minmax(400px, 3fr);
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    user-select: none;
+}
+
+/* Container for left panel to position resizer */
+.left-panel {
+    position: relative;
+    padding-right: 40px;
+    height: fit-content;
+    min-height: 0;
+    max-width: 100%;
+    padding-top: 0;
+}
+
+/* Container for right panel */
+.right-panel {
+    padding-left: 20px;
+    padding-top: 0;
+}
+
+.dashboard-content .resizer {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+    z-index: 10;
+    background: rgba(44, 85, 48, 0.05);
+    transition: all 0.2s;
+    margin: 0;
+}
+
+.dashboard-content .resizer:hover,
+.dashboard-content .resizer.resizing {
+    background: rgba(44, 85, 48, 0.15);
+    width: 12px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    padding: 0;
+    align-items: start;
+    align-content: start;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.stats-card {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.stats-card md-card-title {
+    padding: 16px;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.1);
+    margin: 0;
+}
+
+.stats-card md-card-content {
+    padding: 0;
+    margin: 0;
+    padding: 16px;
+}
+
+.contact-list {
+    height: 100%;
+    overflow: auto;
+}
+
+.md-list-item-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0;
+}
+
+.contact-info {
+    flex: 1;
+    padding: 4px 0;
+}
+
+.contact-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: auto;
+    margin-left: 16px;
+}
+
+/* Status and type container */
+.contact-meta-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    margin-right: 8px;
+}
+
+.contact-type {
+    font-size: 0.8em;
+    color: #d35400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    text-align: right;
+}
+
+.contact-status {
+    font-size: 0.8em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-align: right;
+}
+
+.contact-status.active {
+    background-color: #2c5530;
+    color: white;
+}
+
+.stat-item {
+    padding: 8px 0;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.1);
+    color: #2c5530;
+}
+
+md-list-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    margin: 4px 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+md-list-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.md-list-item-text h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.md-list-item-text h4 {
+    color: #666;
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.md-list-item-text p {
+    margin: 0 0 2px 0;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+    .crm-container {
+        flex-direction: column;
+    }
+
+    .sidenav {
+        width: 100%;
+        min-height: auto;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.md-list-item-text {
+    animation: fadeIn 0.3s ease-out;
+    line-height: 1.2;
+}
+
+/* Override Angular Material's default font */
+md-toolbar,
+md-list-item,
+.md-button,
+.md-headline,
+.md-subhead,
+.md-list-item-text {
+    font-family: 'Noto Sans', sans-serif !important;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    padding: 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 
+        4px 4px 8px #dae3da,
+        -4px -4px 8px #ffffff;
+    height: fit-content;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    height: 24px;
+}
+
+.stat-icon .material-icons {
+    color: #2c5530;
+    font-size: 24px;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-count {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c5530;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-bar {
+    height: 4px;
+    background: rgba(44, 85, 48, 0.1);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    background: #2c5530;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(44, 85, 48, 0.03);
+    border-radius: 8px;
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+.pagination-controls.top {
+    margin-bottom: 8px;
+}
+
+.pagination-controls.bottom {
+    margin-top: 8px;
+    border-top: 1px solid rgba(44, 85, 48, 0.1);
+}
+
+.page-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px;
+    color: #2c5530;
+    font-size: 14px;
+}
+
+.contact-count {
+    font-size: 14px;
+    color: #666;
+    margin-left: 8px;
+    font-weight: normal;
+    padding-top: 2px;
+}
+
+.page-size {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #2c5530;
+}
+
+.page-size md-select {
+    margin: 0;
+    padding: 0;
+    height: 32px;
+}
+
+.page-size span {
+    font-size: 14px;
+}
+
+.pagination-controls .md-icon-button {
+    margin: 0 2px;
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    line-height: 32px;
+    background: rgba(44, 85, 48, 0.05);
+}
+
+.pagination-controls .md-icon-button[disabled] {
+    opacity: 0.5;
+    background: transparent;
+}
+
+.pagination-controls .material-icons {
+    color: #2c5530;
+    font-size: 18px;
+}
+
+md-list-item.md-no-proxy {
+    padding: 0;
+}
+
+md-list-item .md-list-item-inner {
+    padding: 16px 0;
+}
+
+.page-number {
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    font-size: 13px;
+}
+
+.page-number:hover {
+    background: rgba(44, 85, 48, 0.1);
+}
+
+.page-number.active {
+    background: #2c5530;
+    color: white;
+}
+
+.page-ellipsis {
+    padding: 0 4px;
+}
+
+/* Sort controls */
+.sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding-top: 6px;
+}
+
+.sort-controls md-select {
+    margin: 0;
+    font-size: 13px;
+    min-width: 120px;
+}
+
+.sort-controls .secondary-sort {
+    min-width: 100px;
+}
+
+.sort-controls span {
+    white-space: nowrap;
+    color: #666;
+}
+
+/* Override Angular Material's default list item height */
+.sidenav md-list-item._md-button-wrap > div.md-button:first-child {
+    padding: 0;
+    margin: 0;
+    height: 40px;
+    min-height: 40px;
+}
+
+.sidenav md-list-item .md-list-item-inner {
+    min-height: 40px;
+    height: 40px;
+    padding: 0;
+}
+
+.stat-card.clickable {
+    cursor: pointer;
+}
+
+.stat-card.clickable:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 
+        6px 6px 12px #dae3da,
+        -6px -6px 12px #ffffff;
+}
+
+.stat-card.active {
+    background: rgba(44, 85, 48, 0.1);
+    border: 1px solid rgba(44, 85, 48, 0.2);
+}
+
+/* Contact list card title styles */
+.neumorphic md-card-title {
+    padding: 16px;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.1);
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    min-height: 64px;
+    box-sizing: border-box;
+}
+
+.neumorphic md-card-title-text {
+    flex: 1;
+}
+
+.neumorphic md-card-content {
+    padding: 16px;
+}
+
+.neumorphic md-card-title .md-headline {
+    font-size: 20px;
+    font-weight: 500;
+    color: #2c5530;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Override Material Design button sizes in pagination */
+.pagination-controls .md-icon-button .md-ripple-container {
+    width: 32px !important;
+    height: 32px !important;
+    clip: auto;
+}
+
+/* Contact Details Modal */
+.md-dialog-container {
+    z-index: 1000 !important;
+}
+
+md-dialog {
+    z-index: 1001 !important;
+}
+
+md-backdrop.md-dialog-backdrop {
+    z-index: 999 !important;
+}
+
+.contact-details-dialog {
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-details-dialog md-dialog-content {
+    max-height: calc(90vh - 130px) !important;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.contact-details-dialog .md-dialog-content {
+    padding: 20px;
+}
+
+.contact-details-dialog md-toolbar {
+    background-color: #2c5530 !important;
+}
+
+.contact-details-dialog .contact-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.contact-details-dialog .contact-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.contact-details-dialog .contact-name h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #2c5530;
+}
+
+.md-toolbar-tools h1, .md-toolbar-tools h2, .md-toolbar-tools h3 {
+    color: white;
+}
+
+/* Contact Sections Layout */
+.contact-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.contact-section {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.contact-section h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #2c5530;
+    font-size: 16px;
+    font-weight: 700;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.1);
+}
+
+/* Input container spacing */
+.contact-section md-input-container {
+    margin: 8px 0;
+    width: 100%;
+}
+
+/* Name fields layout */
+.contact-section .edit-name-fields {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.contact-section .edit-name-fields md-input-container {
+    flex: 1;
+}
+
+/* Type and status layout */
+.contact-section .contact-type-status {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.contact-section .contact-type-status md-input-container {
+    flex: 1;
+}
+
+/* Full width containers */
+.contact-section .full-width {
+    width: 100%;
+}
+
+/* Dialog actions */
+md-dialog-actions {
+    border-top: 1px solid rgba(44, 85, 48, 0.1);
+    margin: 0;
+    padding: 8px 16px;
+}
+
+/* Select Input Styling */
+.select-container {
+    position: relative;
+    margin: 16px 0;
+    width: 100%;
+}
+
+.select-container label {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.54);
+    pointer-events: none;
+}
+
+.select-input {
+    width: 100%;
+    height: 36px;
+    padding: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.select-input:focus {
+    border-color: #2c5530;
+    outline: none;
+}
+
+.info-row {
+    margin: 12px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    color: #333;
+    min-height: 32px;
+}
+
+.info-row label {
+    min-width: 180px;
+    width: 180px;
+    color: #666;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+    padding-right: 8px;
+    text-align: right;
+}
+
+.info-row span {
+    flex: 1;
+    padding: 6px 0;
+    min-height: 20px;
+}
+
+.info-row.notes span {
+    white-space: pre-line;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    min-height: 60px;
+}
+
+.info-row md-input-container {
+    margin: 0;
+    padding: 0;
+    flex: 1;
+}
+
+.info-row input,
+.info-row textarea {
+    width: 100%;
+    margin: 0;
+    padding: 6px 8px;
+}
+
+.contact-section md-icon {
+    color: #666;
+    font-size: 18px;
+}
+
+.contact-history {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.history-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.history-date {
+    font-size: 12px;
+    color: #666;
+}
+
+.history-type {
+    font-size: 12px;
+    font-weight: 500;
+    color: #2c5530;
+    background: rgba(44, 85, 48, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.history-details {
+    display: flex;
+    gap: 8px;
+    font-size: 14px;
+    color: #333;
+    margin-top: 8px;
+}
+
+.history-details label {
+    color: #666;
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.contact-section.organization {
+    grid-area: org;
+}
+
+.contact-section.contact-info {
+    grid-area: contact;
+}
+
+.contact-section.emergency-contact {
+    grid-area: emergency;
+}
+
+.contact-section.residency-details {
+    grid-area: residency;
+}
+
+.contact-section.notes-section {
+    grid-area: notes;
+}
+
+.md-button.md-default-theme:not([disabled]):hover, 
+.md-button:not([disabled]):hover {
+    background-color: transparent;
+}
+
+/* Action buttons container for list items */
+.contact-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 8px;
+}
+
+/* Show actions on list item hover */
+md-list-item:hover .contact-actions {
+    opacity: 1;
+}
+
+/* Style for action buttons */
+.action-button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    line-height: 32px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.action-button md-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    line-height: 18px;
+}
+
+/* Edit button */
+.action-button.edit {
+    color: #2c5530;
+}
+
+.action-button.edit:hover {
+    background-color: rgba(44, 85, 48, 0.1);
+}
+
+/* Delete button */
+.action-button.delete {
+    color: #d35400;
+}
+
+.action-button.delete:hover {
+    background-color: rgba(211, 84, 0, 0.1);
+}
+
+/* Modal window actions */
+.modal-actions {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    border-top: 1px solid rgba(44, 85, 48, 0.1);
+    justify-content: flex-end;
+}
+
+.modal-actions .md-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    height: 36px;
+    border-radius: 18px;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.modal-actions .md-button md-icon {
+    font-size: 18px;
+}
+
+.modal-actions .save-button {
+    background-color: #2c5530;
+    color: white;
+}
+
+.modal-actions .save-button:hover {
+    background-color: #234326;
+}
+
+.modal-actions .delete-button {
+    color: #d35400;
+}
+
+.modal-actions .delete-button:hover {
+    background-color: rgba(211, 84, 0, 0.1);
+}
+
+/* Edit mode styles for modal fields */
+.editable-field {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.editable-field:hover {
+    background: rgba(44, 85, 48, 0.05);
+    border-radius: 4px;
+}
+
+.editable-field md-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: #2c5530;
+}
+
+.editable-field:hover md-icon {
+    opacity: 1;
+}
+
+/* Input styles for edit mode */
+.edit-mode input,
+.edit-mode textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid rgba(44, 85, 48, 0.2);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.9);
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.edit-mode input:focus,
+.edit-mode textarea:focus {
+    outline: none;
+    border-color: #2c5530;
+    background: white;
+    box-shadow: 0 0 0 2px rgba(44, 85, 48, 0.1);
+}
+
+/* Action buttons styling */
+.contact-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 8px;
+}
+
+md-list-item:hover .contact-actions {
+    opacity: 1;
+}
+
+.contact-actions .md-button {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    line-height: 36px;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+}
+
+.contact-actions .md-button md-icon {
+    font-size: 20px;
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.contact-actions .edit-button:hover {
+    background-color: rgba(44, 85, 48, 0.1);
+}
+
+.contact-actions .edit-button:hover md-icon {
+    color: #2c5530;
+}
+
+.contact-actions .delete-button:hover {
+    background-color: rgba(211, 84, 0, 0.1);
+}
+
+.contact-actions .delete-button:hover md-icon {
+    color: #d35400;
+}
+
+.edit-name-fields {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.edit-name-fields md-input-container {
+    margin: 0;
+}
+
+.contact-sections md-input-container {
+    width: 100%;
+    margin: 0;
+}
+
+.contact-sections .info-row md-input-container {
+    margin: 8px 0;
+}
+
+.contact-sections textarea {
+    min-height: 60px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+md-input-container .md-input {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    padding: 8px;
+}
+
+/* Date input styling */
+.contact-section input[type="date"] {
+    padding: 8px;
+    border: 1px solid rgba(44, 85, 48, 0.2);
+    border-radius: 4px;
+    font-family: inherit;
+    width: 100%;
+}
+
+.contact-section input[type="date"]:focus {
+    outline: none;
+    border-color: #2c5530;
+    box-shadow: 0 0 0 2px rgba(44, 85, 48, 0.1);
+}
+
+/* Emergency contact and residency details sections */
+.emergency-contact,
+.residency-details {
+    background: rgba(44, 85, 48, 0.03);
+}
+
+.emergency-contact h3,
+.residency-details h3 {
+    color: #2c5530;
+    border-bottom-color: rgba(44, 85, 48, 0.2);
+}
+
+/* Format currency and date values */
+.info-row span[ng-if="!isEditing"] {
+    font-family: 'Noto Sans', sans-serif;
+}
+
+/* Align icons in labels */
+.info-row label md-icon {
+    margin-right: 4px;
+    color: #2c5530;
+}
+
+/* Input field styling */
+.contact-section input[type="date"],
+.contact-section input[type="number"],
+.contact-section input[type="email"],
+.contact-section input[type="tel"],
+.contact-section input[type="text"] {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid rgba(44, 85, 48, 0.2);
+    border-radius: 4px;
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Add subtle dividers between rows */
+.info-row:not(:last-child) {
+    border-bottom: 1px solid rgba(44, 85, 48, 0.05);
+    padding-bottom: 8px;
+}
+
+/* Late status indicators */
+.late-status {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px 2px 12px !important;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #f39c12;
+    color: white;
+}
+
+.late-status.critical {
+    background: #c0392b;
+}
+
+/* Adjust the info-row for late status */
+.info-row.has-late-status span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Select Input Styling */
+.select-container {
+    position: relative;
+    margin: 16px 0;
+}
+
+.select-container label {
+    position: absolute;
+    top: -45px;
+    left: 0;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.54);
+    pointer-events: none;
+}
+
+.select-input {
+    width: 100%;
+    height: 36px;
+    padding: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.select-input:focus {
+    border-color: #2c5530;
+    outline: none;
+}
+
+.contact-type-status {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.contact-type-status .md-input-container {
+    margin: 0;
+}
+
+.contact-type-status md-input-container {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+md-card md-card-title {
+    flex: unset !important;
+}
+
+/* Ledger View Styles */
+.ledger-view {
+    padding: 20px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.ledger-view .neumorphic {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ledger-view .neumorphic md-card-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.ledger-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ledger-table table,
+.resident-ledger table,
+.overdue-payments table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+.ledger-table th,
+.resident-ledger th,
+.overdue-payments th {
+    text-align: left;
+    padding: 12px;
+    background: rgba(44, 85, 48, 0.1);
+    color: #2c5530;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.1);
+}
+
+.ledger-table td,
+.resident-ledger td,
+.overdue-payments td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.05);
+}
+
+.payment-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.payment-status.current {
+    background: #27ae60;
+    color: white;
+}
+
+.payment-status.late {
+    background: #f39c12;
+    color: white;
+}
+
+.payment-status.overdue {
+    background: #c0392b;
+    color: white;
+}
+
+.resident-ledger {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.resident-select {
+    width: 300px;
+}
+
+.resident-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.summary-card {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.summary-card .amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c5530;
+}
+
+.summary-card .date {
+    font-size: 18px;
+    font-weight: 500;
+    color: #2c5530;
+}
+
+.summary-card .status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.summary-card .status.current {
+    background: #27ae60;
+    color: white;
+}
+
+.summary-card .status.late {
+    background: #f39c12;
+    color: white;
+}
+
+.summary-card .status.overdue {
+    background: #c0392b;
+    color: white;
+}
+
+.payment-history h3 {
+    margin: 24px 0 16px 0;
+    color: #2c5530;
+    font-size: 18px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ledger-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .resident-select {
+        width: 100%;
+    }
+
+    .resident-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Payment Dialog Styles */
+.payment-dialog {
+    max-width: 600px;
+    width: 90%;
+}
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.payment-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.period-covered {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Payment Status Styles */
+.payment-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.payment-status.current {
+    background: #27ae60;
+    color: white;
+}
+
+.payment-status.late {
+    background: #f39c12;
+    color: white;
+}
+
+.payment-status.overdue {
+    background: #c0392b;
+    color: white;
+}
+
+/* Payment Form Input Styles */
+.payment-form md-input-container {
+    margin: 8px 0;
+}
+
+.payment-form input[type="date"],
+.payment-form input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid rgba(44, 85, 48, 0.2);
+    border-radius: 4px;
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.payment-form input[type="date"]:focus,
+.payment-form input[type="number"]:focus {
+    outline: none;
+    border-color: #2c5530;
+    box-shadow: 0 0 0 2px rgba(44, 85, 48, 0.1);
+}
+
+/* Responsive Payment Form */
+@media (max-width: 600px) {
+    .period-covered {
+        grid-template-columns: 1fr;
+    }
+}
+
+.md-button.md-primary.md-raised {
+    background-color: #2c5530;
+    color: white;
+}
+
+.md-button.md-primary.md-raised md-icon {
+    color: white;
+}
+
+.modal-actions .save-button md-icon,
+.modal-actions .save-button {
+    color: white;
+}
+
+.sidenav md-list-item.active .material-icons,
+.sidenav md-list-item.active p {
+    color: #2c5530;
+}
+
+.md-button.md-default-theme.md-primary.md-fab:not([disabled]) md-icon,
+.md-button.md-primary.md-fab:not([disabled]) md-icon,
+.md-button.md-default-theme.md-primary.md-raised:not([disabled]) md-icon,
+.md-button.md-primary.md-raised:not([disabled]) md-icon {
+    color: white !important;
+}
+
+.payment-details-action {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.payment-details-action .md-button {
+    margin: 0;
+}
+
+.payment-details-action .md-button md-icon {
+    margin-right: 8px;
+}
+
+.payment-history-view {
+    padding: 0;
+}
+
+.payment-history-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.payment-history-header h2 {
+    margin: 0;
+    color: #2c5530;
+    font-size: 24px;
+}
+
+.payment-history-table {
+    margin-top: 24px;
+}
+
+.payment-history-table h3 {
+    color: #2c5530;
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.payment-history-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+}
+
+.payment-history-table th {
+    text-align: left;
+    padding: 12px;
+    background: rgba(44, 85, 48, 0.1);
+    color: #2c5530;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.1);
+}
+
+.payment-history-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(44, 85, 48, 0.05);
+}
+
+.payment-history-view .resident-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.payment-history-view .summary-card {
+    background: rgba(255, 255, 255, 0.7);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.payment-history-view .summary-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.payment-history-view .summary-card .amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c5530;
+}
+
+.payment-history-view .summary-card .payment-date {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.payment-history-view .summary-card .status {
+    margin-top: 8px;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.payment-history-view .status-on-time {
+    background: #27ae60;
+    color: white;
+}
+
+.payment-history-view .status-late {
+    background: #f39c12;
+    color: white;
+}
+
+.payment-history-view .status-critical {
+    background: #c0392b;
+    color: white;
+}

@@ -1,0 +1,22 @@
+[
+    {
+        "residentName": "John Smith",
+        "amount": 500,
+        "date": "2023-12-01",
+        "periodStart": "2023-12-01",
+        "periodEnd": "2023-12-31",
+        "method": "Cash",
+        "notes": "Initial payment",
+        "balance": 0
+    },
+    {
+        "residentName": "Jane Doe",
+        "amount": 1000,
+        "date": "2023-11-15",
+        "periodStart": "2023-11-15",
+        "periodEnd": "2024-01-15",
+        "method": "Check",
+        "notes": "Paid two months in advance",
+        "balance": 0
+    }
+] 

@@ -1,0 +1,61 @@
+<!-- Payment Dialog -->
+<dialog class="mdl-dialog" id="paymentDialog">
+    <h4 class="mdl-dialog__title">Record Payment</h4>
+    <div class="mdl-dialog__content">
+        <form id="paymentForm">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <select class="mdl-textfield__input" id="residentId" name="residentId" required>
+                    <option value="">Select Resident</option>
+                    <!-- Options will be populated dynamically -->
+                </select>
+                <label class="mdl-textfield__label" for="residentId">Resident</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="number" step="0.01" id="amount" name="amount" required>
+                <label class="mdl-textfield__label" for="amount">Amount ($)</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="date" id="date" name="date" required>
+                <label class="mdl-textfield__label" for="date">Payment Date</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="date" id="periodStart" name="periodStart" required>
+                <label class="mdl-textfield__label" for="periodStart">Period Start</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="date" id="periodEnd" name="periodEnd" required>
+                <label class="mdl-textfield__label" for="periodEnd">Period End</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <select class="mdl-textfield__input" id="method" name="method" required>
+                    <option value="">Select Payment Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Check">Check</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Money Order">Money Order</option>
+                </select>
+                <label class="mdl-textfield__label" for="method">Payment Method</label>
+            </div>
+
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <textarea class="mdl-textfield__input" type="text" rows="3" id="notes" name="notes"></textarea>
+                <label class="mdl-textfield__label" for="notes">Notes</label>
+            </div>
+
+            <input type="hidden" id="residentName" name="residentName">
+            <input type="hidden" id="balance" name="balance">
+        </form>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button type="submit" form="paymentForm" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+            Record Payment
+        </button>
+        <button type="button" class="mdl-button close">Cancel</button>
+    </div>
+</dialog> 
