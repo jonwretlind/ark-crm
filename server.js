@@ -264,12 +264,20 @@ async function connectDB() {
 
         // Update contacts collection schema
         try {
+            // First, disable validation
+            await db.command({
+                collMod: 'contacts',
+                validationLevel: "off"
+            });
+            console.log('Temporarily disabled validation');
+
+            // Update the schema
             await db.command({
                 collMod: 'contacts',
                 validator: {
                     $jsonSchema: {
                         bsonType: 'object',
-                        required: ['firstName', 'lastName', 'type', 'status'],
+                        required: ['firstName', 'lastName', 'type', 'status', 'contact'],
                         properties: {
                             firstName: { bsonType: 'string' },
                             lastName: { bsonType: 'string' },
@@ -294,45 +302,68 @@ async function connectDB() {
                                 enum: ['Active', 'Inactive']
                             },
                             residencyDetails: {
-                                bsonType: 'object',
+                                bsonType: ['object', 'null'],
                                 properties: {
-                                    moveInDate: { bsonType: 'date' },
-                                    programFeesPaidUntil: { bsonType: 'date' },
-                                    programBalance: { bsonType: 'number' },
-                                    programFee: { bsonType: 'number' },
-                                    discipler: { bsonType: 'string' },
-                                    comments: { bsonType: 'string' }
+                                    moveInDate: { 
+                                        bsonType: ['date', 'null']
+                                    },
+                                    programFeesPaidUntil: { 
+                                        bsonType: ['date', 'null']
+                                    },
+                                    programBalance: { 
+                                        bsonType: ['number', 'null']
+                                    },
+                                    programFee: { 
+                                        bsonType: ['number', 'null']
+                                    },
+                                    discipler: { 
+                                        bsonType: ['string', 'null']
+                                    },
+                                    comments: { 
+                                        bsonType: ['string', 'null']
+                                    },
+                                    dischargeReason: { 
+                                        bsonType: ['string', 'null'],
+                                        enum: ['Relapse', 'Discharged Home', 'Dismissed for Cause', 'Dismissed for Non-Payment', null]
+                                    },
+                                    lastPaymentDate: {
+                                        bsonType: ['date', 'null']
+                                    }
                                 }
                             },
                             contact: {
                                 bsonType: 'object',
+                                required: ['email'],
                                 properties: {
                                     email: { bsonType: 'string' },
-                                    phone: { bsonType: 'string' },
-                                    address: { bsonType: 'string' }
+                                    phone: { bsonType: ['string', 'null'] },
+                                    address: { bsonType: ['string', 'null'] }
                                 }
                             },
                             organization: {
-                                bsonType: 'object',
+                                bsonType: ['object', 'null'],
                                 properties: {
-                                    name: { bsonType: 'string' },
-                                    role: { bsonType: 'string' }
+                                    name: { bsonType: ['string', 'null'] },
+                                    role: { bsonType: ['string', 'null'] }
                                 }
                             },
                             emergencyContact: {
-                                bsonType: 'object',
+                                bsonType: ['object', 'null'],
                                 properties: {
-                                    name: { bsonType: 'string' },
-                                    relationship: { bsonType: 'string' },
-                                    phone: { bsonType: 'string' }
+                                    name: { bsonType: ['string', 'null'] },
+                                    relationship: { bsonType: ['string', 'null'] },
+                                    phone: { bsonType: ['string', 'null'] }
                                 }
                             },
-                            notes: { bsonType: 'string' },
+                            notes: { 
+                                bsonType: ['string', 'null']
+                            },
                             createdAt: { bsonType: 'date' }
                         }
                     }
                 },
-                validationLevel: "moderate"
+                validationLevel: "moderate",
+                validationAction: "error"
             });
             console.log('Updated contacts collection schema');
         } catch (schemaError) {
@@ -523,9 +554,66 @@ app.put('/api/contacts/:id', async (req, res) => {
 
         const { id } = req.params;
         const updatedContact = req.body;
+        console.log('Updating contact:', id, 'with data:', JSON.stringify(updatedContact, null, 2));
         delete updatedContact._id; // Remove _id from update operation
+        delete updatedContact.id; // Remove duplicate id field
 
-        // Ensure programFee has a value for resident types
+        // Ensure required fields are present
+        if (!updatedContact.firstName || !updatedContact.lastName || !updatedContact.type || !updatedContact.status) {
+            throw new Error('Missing required fields');
+        }
+
+        // Ensure contact object exists and has required email field
+        if (!updatedContact.contact || !updatedContact.contact.email) {
+            throw new Error('Contact email is required');
+        }
+
+        // Convert date strings to Date objects in residencyDetails
+        if (updatedContact.residencyDetails) {
+            const dateFields = ['programFeesPaidUntil', 'moveInDate', 'lastPaymentDate'];
+            for (const field of dateFields) {
+                if (updatedContact.residencyDetails[field]) {
+                    updatedContact.residencyDetails[field] = new Date(updatedContact.residencyDetails[field]);
+                } else {
+                    updatedContact.residencyDetails[field] = null;
+                }
+            }
+
+            // Handle PastResident specific fields
+            if (updatedContact.type === 'PastResident') {
+                // Ensure required fields have at least empty string values
+                updatedContact.residencyDetails.discipler = updatedContact.residencyDetails.discipler || '';
+                updatedContact.residencyDetails.comments = updatedContact.residencyDetails.comments || '';
+                
+                // Ensure numeric fields are numbers or null
+                if (updatedContact.residencyDetails.programBalance === undefined) {
+                    updatedContact.residencyDetails.programBalance = null;
+                }
+                if (updatedContact.residencyDetails.programFee === undefined) {
+                    updatedContact.residencyDetails.programFee = null;
+                }
+            }
+        }
+
+        // Ensure organization is an object or null
+        if (!updatedContact.organization) {
+            updatedContact.organization = { name: '', role: '' };
+        }
+
+        // Ensure emergencyContact is an object or null
+        if (!updatedContact.emergencyContact) {
+            updatedContact.emergencyContact = { name: '', relationship: '', phone: '' };
+        }
+
+        // Ensure notes is a string or null
+        updatedContact.notes = updatedContact.notes || '';
+
+        // Ensure createdAt is a Date
+        if (updatedContact.createdAt) {
+            updatedContact.createdAt = new Date(updatedContact.createdAt);
+        }
+
+        // Ensure programFee has a value for active resident types
         if (['Resident', 'ResidentPipeline'].includes(updatedContact.type)) {
             if (!updatedContact.residencyDetails) {
                 updatedContact.residencyDetails = {};
@@ -537,13 +625,15 @@ app.put('/api/contacts/:id', async (req, res) => {
             { _id: new ObjectId(id) },
             { $set: updatedContact }
         );
+        console.log('Update result:', result);
 
         if (result.matchedCount === 0) {
             return res.status(404).json({ error: 'Contact not found' });
         }
 
-        // If this is a resident and residencyDetails were updated, sync payments
+        // Only sync payments for active residents
         if (updatedContact.type === 'Resident' && updatedContact.residencyDetails) {
+            console.log('Syncing payments for resident:', updatedContact.firstName, updatedContact.lastName);
             const residentName = `${updatedContact.firstName} ${updatedContact.lastName}`;
             
             // Get the latest payment
@@ -552,9 +642,11 @@ app.put('/api/contacts/:id', async (req, res) => {
                 .sort({ periodEnd: -1 })
                 .limit(1)
                 .toArray();
+            console.log('Latest payment found:', latestPayment);
 
             // Create or update payment record if needed
             if (updatedContact.residencyDetails.programFeesPaidUntil) {
+                console.log('Creating new payment record based on programFeesPaidUntil:', updatedContact.residencyDetails.programFeesPaidUntil);
                 const newPayment = {
                     residentId: id,
                     residentName: residentName,
@@ -569,14 +661,17 @@ app.put('/api/contacts/:id', async (req, res) => {
                     balance: updatedContact.residencyDetails.programBalance || 0,
                     createdAt: new Date()
                 };
+                console.log('New payment record:', newPayment);
 
                 await db.collection('payments').insertOne(newPayment);
+                console.log('Payment record created successfully');
             }
         }
 
         res.json({ message: 'Contact updated successfully' });
     } catch (error) {
         console.error('Error updating contact:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ error: error.message });
     }
 });
@@ -602,16 +697,29 @@ app.post('/api/contacts', async (req, res) => {
             newContact.residencyDetails.programFee = newContact.residencyDetails.programFee || 850;
         }
 
-        const result = await db.collection('contacts').insertOne(newContact);
-        
-        if (!result.insertedId) {
-            throw new Error('Failed to create contact');
-        }
+        try {
+            const result = await db.collection('contacts').insertOne(newContact);
+            
+            if (!result.insertedId) {
+                throw new Error('Failed to create contact');
+            }
 
-        res.status(201).json({
-            message: 'Contact created successfully',
-            contact: { ...newContact, _id: result.insertedId }
-        });
+            res.status(201).json({
+                message: 'Contact created successfully',
+                contact: { ...newContact, _id: result.insertedId }
+            });
+        } catch (dbError) {
+            // Log detailed validation error information
+            if (dbError.code === 121) {
+                console.error('Validation error details:', JSON.stringify(dbError.errInfo.details, null, 2));
+                res.status(400).json({
+                    error: 'Contact validation failed',
+                    details: dbError.errInfo.details
+                });
+            } else {
+                throw dbError;
+            }
+        }
     } catch (error) {
         console.error('Error creating contact:', error);
         res.status(500).json({ error: error.message });
@@ -734,6 +842,32 @@ app.get('/api/diagnostics', async (req, res) => {
     } catch (error) {
         console.error('Diagnostics error:', error);
         res.status(500).json({ error: 'Error running diagnostics' });
+    }
+});
+
+// API endpoint to delete a contact
+app.delete('/api/contacts/:id', async (req, res) => {
+    try {
+        if (!db) {
+            throw new Error('Database connection not established');
+        }
+
+        const { id } = req.params;
+
+        // Delete the contact
+        const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(id) });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'Contact not found' });
+        }
+
+        // Also delete any associated payments if this was a resident
+        await db.collection('payments').deleteMany({ residentId: id });
+
+        res.json({ message: 'Contact deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting contact:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

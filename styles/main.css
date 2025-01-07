@@ -1245,6 +1245,7 @@ md-input-container .md-input {
     font-size: 14px;
     line-height: 1.5;
     font-family: 'Noto Sans', sans-serif;
+    margin: 28px 0px;
 }
 
 .select-input:focus {
@@ -1654,4 +1655,89 @@ md-card md-card-title {
 .payment-history-view .status-critical {
     background: #c0392b;
     color: white;
+}
+
+/* Analytics View Styles */
+.analytics-view {
+    padding: 20px;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.analytics-view .neumorphic {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.analytics-view .chart-container {
+    position: relative;
+    height: 450px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(44, 85, 48, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+.analytics-view .chart-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 30px;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(44, 85, 48, 0.05);
+    backdrop-filter: blur(10px);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.analytics-view .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(44, 85, 48, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analytics-view .legend-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(44, 85, 48, 0.1);
+}
+
+.analytics-view .legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-view .legend-label {
+    color: #2c5530;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.analytics-view .legend-label .count {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c5530;
+}
+
+.analytics-view .legend-label .percentage {
+    font-size: 13px;
+    color: rgba(44, 85, 48, 0.7);
 }

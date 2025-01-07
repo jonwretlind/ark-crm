@@ -1,0 +1,15 @@
+<div class="analytics-view">
+    <div class="chart-container" ng-if="currentView === 'analytics'">
+        <canvas id="residentChart"></canvas>
+    </div>
+    <div class="chart-legend">
+        <div class="legend-item" ng-repeat="item in chartLegend">
+            <div class="legend-color" ng-style="{'background-color': item.color}"></div>
+            <div class="legend-label">
+                <span>{{item.label}}</span>
+                <span class="count">{{item.count}} residents</span>
+                <span class="percentage">({{item.percentage}}%)</span>
+            </div>
+        </div>
+    </div>
+</div> 

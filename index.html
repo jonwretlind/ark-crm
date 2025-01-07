@@ -50,6 +50,30 @@
                 </div>
             </md-toolbar>
 
+            <!-- Analytics View -->
+            <div ng-if="currentView === 'analytics'" class="analytics-view">
+                <md-card class="neumorphic">
+                    <md-card-title>
+                        <md-card-title-text>
+                            <span class="md-headline">Resident Distribution</span>
+                        </md-card-title-text>
+                    </md-card-title>
+                    <md-card-content>
+                        <div class="chart-container">
+                            <canvas id="residentChart"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item" ng-repeat="item in chartLegend">
+                                <div class="legend-color" ng-style="{'background-color': item.color}"></div>
+                                <div class="legend-label">
+                                    {{item.label}}: {{item.count}} ({{item.percentage}}%)
+                                </div>
+                            </div>
+                        </div>
+                    </md-card-content>
+                </md-card>
+            </div>
+
             <!-- Add Ledger View -->
             <div ng-if="currentView === 'ledger'" class="ledger-view">
                 <md-card class="neumorphic">
@@ -403,6 +427,10 @@
         </div>
     </div>
 
+    <!-- Add Chart.js before other scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
     <!-- Angular Dependencies -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.min.js"></script>
@@ -602,48 +630,77 @@
 
                             <!-- Residency Details Section (Only for current Residents) -->
                             <section class="contact-section residency-details" 
-                                    ng-if="['Resident', 'PastResident'].includes(contact.type)">
+                                    ng-if="contact.type === 'Resident' || contact.type === 'ResidentPipeline' || contact.type === 'PastResident'">
                                 <h3>Residency Details</h3>
-                                <div class="info-row">
-                                    <label>Move-In Date:</label>
-                                    <span ng-if="!isEditing">{{contact.residencyDetails.moveInDate | date:'MM/dd/yyyy'}}</span>
-                                    <md-input-container ng-if="isEditing">
-                                        <input type="date" ng-model="editableContact.residencyDetails.moveInDate">
-                                    </md-input-container>
+                                <div ng-if="!isEditing">
+                                    <div ng-if="contact.type === 'Resident' || contact.type === 'ResidentPipeline'">
+                                        <p><strong>Move In Date:</strong> {{contact.residencyDetails.moveInDate | date:'MM/dd/yyyy'}}</p>
+                                        <p><strong>Program Fees Paid Until:</strong> {{contact.residencyDetails.programFeesPaidUntil | date:'MM/dd/yyyy'}}</p>
+                                        <p><strong>Program Balance:</strong> {{contact.residencyDetails.programBalance | currency}}</p>
+                                        <p><strong>Program Fee:</strong> {{contact.residencyDetails.programFee | currency}}</p>
+                                        <p><strong>Discipler:</strong> {{contact.residencyDetails.discipler}}</p>
+                                        <p><strong>Comments:</strong> {{contact.residencyDetails.comments}}</p>
+                                    </div>
+                                    <div ng-if="contact.type === 'PastResident'">
+                                        <p><strong>Move In Date:</strong> {{contact.residencyDetails.moveInDate | date:'MM/dd/yyyy'}}</p>
+                                        <p><strong>Discipler:</strong> {{contact.residencyDetails.discipler}}</p>
+                                        <p><strong>Discharge Reason:</strong> {{contact.residencyDetails.dischargeReason}}</p>
+                                        <p><strong>Comments:</strong> {{contact.residencyDetails.comments}}</p>
+                                    </div>
                                 </div>
-                                <div class="info-row has-late-status">
-                                    <label>Program Fees Paid Until:</label>
-                                    <span ng-if="!isEditing">
-                                        {{contact.residencyDetails.programFeesPaidUntil | date:'MM/dd/yyyy'}}
-                                        <span class="late-status" 
-                                              ng-if="getDaysLate(contact.residencyDetails.programFeesPaidUntil) > 15"
-                                              ng-class="{'critical': getDaysLate(contact.residencyDetails.programFeesPaidUntil) >= 30}">
-                                            {{getDaysLate(contact.residencyDetails.programFeesPaidUntil)}} Days Late
-                                        </span>
-                                    </span>
-                                    <md-input-container ng-if="isEditing">
-                                        <input type="date" ng-model="editableContact.residencyDetails.programFeesPaidUntil">
-                                    </md-input-container>
-                                </div>
-                                <div class="info-row">
-                                    <label>Program Balance:</label>
-                                    <span ng-if="!isEditing">{{contact.residencyDetails.programBalance | currency}}</span>
-                                    <md-input-container ng-if="isEditing">
-                                        <input type="number" step="0.01" ng-model="editableContact.residencyDetails.programBalance">
-                                    </md-input-container>
-                                </div>
-                                <div class="info-row">
-                                    <label>Discipler:</label>
-                                    <span ng-if="!isEditing">{{contact.residencyDetails.discipler}}</span>
-                                    <md-input-container ng-if="isEditing">
-                                        <input ng-model="editableContact.residencyDetails.discipler">
-                                    </md-input-container>
-                                </div>
-                                <div class="info-row payment-details-action">
-                                    <md-button class="md-raised md-primary" ng-click="viewPaymentDetails(contact)">
-                                        <md-icon>account_balance</md-icon>
-                                        View Payment Details
-                                    </md-button>
+                                <div ng-if="isEditing">
+                                    <div ng-if="editableContact.type === 'Resident' || editableContact.type === 'ResidentPipeline'">
+                                        <md-input-container class="full-width">
+                                            <label>Move In Date</label>
+                                            <md-datepicker ng-model="editableContact.residencyDetails.moveInDate"></md-datepicker>
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Program Fees Paid Until</label>
+                                            <md-datepicker ng-model="editableContact.residencyDetails.programFeesPaidUntil"></md-datepicker>
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Program Balance</label>
+                                            <input type="number" ng-model="editableContact.residencyDetails.programBalance">
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Program Fee</label>
+                                            <input type="number" ng-model="editableContact.residencyDetails.programFee">
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Discipler</label>
+                                            <input ng-model="editableContact.residencyDetails.discipler">
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Comments</label>
+                                            <textarea ng-model="editableContact.residencyDetails.comments"></textarea>
+                                        </md-input-container>
+                                    </div>
+                                    <div ng-if="editableContact.type === 'PastResident'">
+                                        <md-input-container class="full-width">
+                                            <label>Move In Date</label>
+                                            <md-datepicker ng-model="editableContact.residencyDetails.moveInDate"></md-datepicker>
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Discipler</label>
+                                            <input ng-model="editableContact.residencyDetails.discipler">
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Discharge Reason</label>
+                                            <select class="select-input" 
+                                                    ng-model="editableContact.residencyDetails.dischargeReason" 
+                                                    required>
+                                                <option value="">Select a reason</option>
+                                                <option value="Relapse">Relapse</option>
+                                                <option value="Discharged Home">Discharged Home</option>
+                                                <option value="Dismissed for Cause">Dismissed for Cause</option>
+                                                <option value="Dismissed for Non-Payment">Dismissed for Non-Payment</option>
+                                            </select>
+                                        </md-input-container>
+                                        <md-input-container class="full-width">
+                                            <label>Comments</label>
+                                            <textarea ng-model="editableContact.residencyDetails.comments"></textarea>
+                                        </md-input-container>
+                                    </div>
                                 </div>
                             </section>
 

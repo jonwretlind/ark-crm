@@ -4,9 +4,9 @@
     angular.module('arkCRM')
         .controller('MainController', MainController);
 
-    MainController.$inject = ['$scope', '$mdDialog', 'ContactService', '$mdToast', 'ObjectId'];
+    MainController.$inject = ['$scope', '$mdDialog', 'ContactService', '$mdToast', 'ObjectId', '$timeout', '$rootScope'];
 
-    function MainController($scope, $mdDialog, ContactService, $mdToast, ObjectId) {
+    function MainController($scope, $mdDialog, ContactService, $mdToast, ObjectId, $timeout, $rootScope) {
         $scope.contacts = [];
         $scope.stats = {};
         $scope.currentView = 'dashboard';
@@ -20,6 +20,8 @@
             $scope.currentView = view;
             // Reset pagination when changing views
             $scope.pagination.currentPage = 1;
+            // Emit view change event
+            $rootScope.$emit('viewChanged', view);
         };
 
         // Sort configuration
@@ -391,6 +393,14 @@
             $scope.editableContact = null;
             $scope.showingPayments = false;
             $scope.payments = [];
+            
+            // Add discharge reasons to the scope
+            $scope.dischargeReasons = [
+                'Relapse',
+                'Discharged Home',
+                'Dismissed for Cause',
+                'Dismissed for Non-Payment'
+            ];
 
             // Function to view payment details
             $scope.viewPaymentDetails = function(contact) {
@@ -635,14 +645,24 @@
                 status: 'Active',
                 contact: {
                     email: '',
-                    phone: '',
-                    address: ''
+                    phone: null,
+                    address: null
                 },
                 organization: {
-                    name: '',
-                    role: ''
+                    name: null,
+                    role: null
                 },
-                notes: ''
+                residencyDetails: null,
+                emergencyContact: null,
+                volunteerDetails: {
+                    skills: []
+                },
+                donorDetails: {
+                    donations: []
+                },
+                notes: '',
+                createdAt: new Date(),
+                tags: []
             };
 
             // Handle type change
@@ -651,65 +671,107 @@
                 
                 console.log('Type changed to:', $scope.newContact.type);
                 
+                // Reset all type-specific fields to empty objects with null values
+                $scope.newContact.organization = {
+                    name: null,
+                    role: null
+                };
+                $scope.newContact.residencyDetails = null;
+                $scope.newContact.emergencyContact = null;
+                $scope.newContact.volunteerDetails = {
+                    skills: []
+                };
+                $scope.newContact.donorDetails = {
+                    donations: []
+                };
+                
                 // Handle resident-specific fields
                 if ($scope.newContact.type === 'Resident') {
                     $scope.newContact.residencyDetails = {
                         moveInDate: new Date(),
                         programFeesPaidUntil: new Date(),
                         programBalance: 0,
-                        programFee: 850, // Default program fee
+                        programFee: 850,
                         discipler: '',
-                        comments: ''
+                        comments: '',
+                        dischargeReason: null
                     };
                     $scope.newContact.emergencyContact = {
                         name: '',
                         relationship: '',
                         phone: ''
                     };
-                    // Clear organization fields for resident types
-                    $scope.newContact.organization = {
-                        name: '',
-                        role: ''
-                    };
                 } else if ($scope.newContact.type === 'ResidentPipeline') {
-                    // Initialize basic residency fields for pipeline
                     $scope.newContact.residencyDetails = {
                         moveInDate: null,
                         programFeesPaidUntil: null,
                         programBalance: 0,
-                        programFee: 850, // Default program fee
+                        programFee: 850,
                         discipler: '',
-                        comments: ''
+                        comments: '',
+                        dischargeReason: null
                     };
                     $scope.newContact.emergencyContact = {
                         name: '',
                         relationship: '',
                         phone: ''
                     };
-                } else if (['Donor', 'ReferralSource', 'Partner'].includes($scope.newContact.type)) {
-                    // Initialize organization fields for organization-related types
-                    $scope.newContact.organization = $scope.newContact.organization || {
-                        name: '',
-                        role: ''
+                } else if ($scope.newContact.type === 'PastResident') {
+                    $scope.newContact.residencyDetails = {
+                        moveInDate: null,
+                        programFeesPaidUntil: null,
+                        programBalance: 0,
+                        programFee: 0,
+                        discipler: '',
+                        comments: '',
+                        dischargeReason: null
                     };
-                    // Clear resident-specific fields
-                    delete $scope.newContact.residencyDetails;
-                    delete $scope.newContact.emergencyContact;
-                } else {
-                    // Clear both organization and resident-specific fields for other types
-                    delete $scope.newContact.residencyDetails;
-                    delete $scope.newContact.emergencyContact;
+                    $scope.newContact.emergencyContact = {
+                        name: '',
+                        relationship: '',
+                        phone: ''
+                    };
+                }
+
+                // Handle organization fields
+                if (['Donor', 'ReferralSource', 'Partner'].includes($scope.newContact.type)) {
                     $scope.newContact.organization = {
                         name: '',
                         role: ''
                     };
                 }
+
+                // Handle volunteer fields
+                if ($scope.newContact.type === 'Volunteer') {
+                    $scope.newContact.volunteerDetails = {
+                        skills: []
+                    };
+                }
+
+                // Handle donor fields
+                if ($scope.newContact.type === 'Donor') {
+                    $scope.newContact.donorDetails = {
+                        donations: []
+                    };
+                }
             };
+
+            // Available discharge reasons
+            $scope.dischargeReasons = [
+                'Relapse',
+                'Discharged Home',
+                'Dismissed for Cause',
+                'Dismissed for Non-Payment'
+            ];
 
             // Watch for status changes on current residents
             $scope.$watch('newContact.status', function(newStatus, oldStatus) {
                 if ($scope.newContact.type === 'Resident' && newStatus === 'Inactive' && oldStatus === 'Active') {
                     $scope.newContact.type = 'PastResident';
+                    // Reset payment-related fields
+                    $scope.newContact.residencyDetails.programFeesPaidUntil = null;
+                    $scope.newContact.residencyDetails.programBalance = 0;
+                    $scope.newContact.residencyDetails.programFee = 0;
                     $mdToast.show(
                         $mdToast.simple()
                             .textContent('Contact moved to Past Residents')
@@ -1117,5 +1179,231 @@
                 calculateOverduePayments();
             }
         };
+
+        // Function to delete a contact
+        $scope.deleteContact = function(contact, event) {
+            event.stopPropagation(); // Prevent opening the contact details modal
+            
+            const confirm = $mdDialog.confirm()
+                .title('Delete Contact')
+                .textContent(`Are you sure you want to delete ${contact.firstName} ${contact.lastName}?`)
+                .ariaLabel('Delete Contact')
+                .targetEvent(event)
+                .ok('Delete')
+                .cancel('Cancel');
+
+            $mdDialog.show(confirm).then(function() {
+                ContactService.deleteContact(contact._id)
+                    .then(function() {
+                        // Remove contact from the list
+                        $scope.contacts = $scope.contacts.filter(c => c._id !== contact._id);
+                        // Recalculate stats
+                        calculateStats($scope.contacts);
+                        
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Contact deleted successfully')
+                                .position('top right')
+                                .hideDelay(3000)
+                        );
+                    })
+                    .catch(function(error) {
+                        console.error('Error deleting contact:', error);
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Error deleting contact')
+                                .position('top right')
+                                .hideDelay(3000)
+                        );
+                    });
+            });
+        };
+
+        // Add chart initialization and update functions
+        $scope.initResidentChart = function() {
+            const ctx = document.getElementById('residentChart').getContext('2d');
+            
+            // Register the datalabels plugin
+            Chart.register(ChartDataLabels);
+            
+            $scope.residentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#2c5530', // Current Residents (dark green)
+                            '#4CAF50', // Pipeline Residents (light green)
+                            '#c0392b', // Relapse (red)
+                            '#3498db', // Discharged Home (blue)
+                            '#e67e22', // Dismissed for Cause (orange)
+                            '#95a5a6'  // Dismissed for Non-Payment (gray)
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 15,
+                        hoverBorderWidth: 0,
+                        spacing: 3,
+                        borderRadius: 3,
+                        offset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    radius: '90%',
+                    layout: {
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 20,
+                            right: 20
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#2c5530',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold',
+                                family: "'Noto Sans', sans-serif"
+                            },
+                            bodyColor: '#2c5530',
+                            bodyFont: {
+                                size: 13,
+                                family: "'Noto Sans', sans-serif"
+                            },
+                            padding: 12,
+                            boxPadding: 8,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            borderColor: 'rgba(44, 85, 48, 0.1)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                            font: {
+                                weight: 'bold',
+                                size: 13,
+                                family: "'Noto Sans', sans-serif"
+                            },
+                            formatter: function(value, context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return percentage + '%';
+                            },
+                            display: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const value = context.dataset.data[context.dataIndex];
+                                const percentage = (value / total) * 100;
+                                return percentage > 5; // Only show label if segment is > 5%
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
+                    elements: {
+                        arc: {
+                            borderAlign: 'inner'
+                        }
+                    }
+                }
+            });
+        };
+
+        $scope.updateResidentChart = function() {
+            const residentStats = {
+                'Current Residents': 0,
+                'Pipeline Residents': 0,
+                'Relapse': 0,
+                'Discharged Home': 0,
+                'Dismissed for Cause': 0,
+                'Dismissed for Non-Payment': 0
+            };
+
+            // Count residents by type and discharge reason
+            $scope.contacts.forEach(contact => {
+                if (contact.type === 'Resident') {
+                    residentStats['Current Residents']++;
+                } else if (contact.type === 'ResidentPipeline') {
+                    residentStats['Pipeline Residents']++;
+                } else if (contact.type === 'PastResident' && contact.residencyDetails?.dischargeReason) {
+                    residentStats[contact.residencyDetails.dischargeReason]++;
+                }
+            });
+
+            // Update chart data
+            const labels = Object.keys(residentStats);
+            const data = Object.values(residentStats);
+            const total = data.reduce((a, b) => a + b, 0);
+
+            $scope.residentChart.data.labels = labels;
+            $scope.residentChart.data.datasets[0].data = data;
+            $scope.residentChart.update();
+
+            // Update legend
+            $scope.chartLegend = labels.map((label, index) => ({
+                label: label,
+                color: $scope.residentChart.data.datasets[0].backgroundColor[index],
+                count: data[index],
+                percentage: ((data[index] / total) * 100).toFixed(1)
+            }));
+        };
+
+        // Update chart when view changes or contacts are loaded
+        $scope.$watch('currentView', function(newView, oldView) {
+            console.log('View changed from', oldView, 'to:', newView);
+            if (oldView === 'analytics' && $scope.residentChart) {
+                console.log('Destroying old chart');
+                $scope.residentChart.destroy();
+                $scope.residentChart = null;
+            }
+            
+            if (newView === 'analytics') {
+                console.log('Initializing analytics chart');
+                // Use timeout to ensure DOM is ready
+                $timeout(function() {
+                    $scope.initResidentChart();
+                    $scope.updateResidentChart();
+                }, 100);
+            }
+        });
+
+        $scope.$watch('contacts', function(newContacts) {
+            if (newContacts && $scope.currentView === 'analytics') {
+                console.log('Contacts updated, updating chart');
+                if (!$scope.residentChart) {
+                    console.log('Chart not found, initializing');
+                    $timeout(function() {
+                        $scope.initResidentChart();
+                        $scope.updateResidentChart();
+                    }, 100);
+                } else {
+                    console.log('Updating existing chart');
+                    $scope.updateResidentChart();
+                }
+            }
+        }, true);
     }
 })(); 
