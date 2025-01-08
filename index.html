@@ -110,6 +110,7 @@
                                         <th>Period Start</th>
                                         <th>Period End</th>
                                         <th>Balance</th>
+                                        <th>Status</th>
                                         <th>Notes</th>
                                     </tr>
                                 </thead>
@@ -123,6 +124,17 @@
                                         <td>{{payment.periodStart | date:'MM/dd/yyyy'}}</td>
                                         <td>{{payment.periodEnd | date:'MM/dd/yyyy'}}</td>
                                         <td>{{payment.balance | currency}}</td>
+                                        <td>
+                                            <span class="fees-status late" 
+                                                  ng-if="isFeesLate(payment.periodEnd) && !isFeesCritical(payment.periodEnd)">
+                                                {{getDaysLate(payment.periodEnd)}} Days Late
+                                            </span>
+                                            <span class="fees-status critical" 
+                                                  ng-if="isFeesCritical(payment.periodEnd)">
+                                                {{getDaysLate(payment.periodEnd)}} Days Late
+                                            </span>
+                                            <span ng-if="!isFeesLate(payment.periodEnd)">Current</span>
+                                        </td>
                                         <td>{{payment.notes}}</td>
                                     </tr>
                                 </tbody>
@@ -186,6 +198,7 @@
                                             <th>Period Start</th>
                                             <th>Period End</th>
                                             <th>Balance</th>
+                                            <th>Status</th>
                                             <th>Notes</th>
                                         </tr>
                                     </thead>
@@ -198,6 +211,17 @@
                                             <td>{{payment.periodStart | date:'MM/dd/yyyy'}}</td>
                                             <td>{{payment.periodEnd | date:'MM/dd/yyyy'}}</td>
                                             <td>{{payment.balance | currency}}</td>
+                                            <td>
+                                                <span class="fees-status late" 
+                                                      ng-if="isFeesLate(payment.periodEnd) && !isFeesCritical(payment.periodEnd)">
+                                                    {{getDaysLate(payment.periodEnd)}} Days Late
+                                                </span>
+                                                <span class="fees-status critical" 
+                                                      ng-if="isFeesCritical(payment.periodEnd)">
+                                                    {{getDaysLate(payment.periodEnd)}} Days Late
+                                                </span>
+                                                <span ng-if="!isFeesLate(payment.periodEnd)">Current</span>
+                                            </td>
                                             <td>{{payment.notes}}</td>
                                         </tr>
                                     </tbody>
@@ -635,17 +659,36 @@
                                 <div ng-if="!isEditing">
                                     <div ng-if="contact.type === 'Resident' || contact.type === 'ResidentPipeline'">
                                         <p><strong>Move In Date:</strong> {{contact.residencyDetails.moveInDate | date:'MM/dd/yyyy'}}</p>
-                                        <p><strong>Program Fees Paid Until:</strong> {{contact.residencyDetails.programFeesPaidUntil | date:'MM/dd/yyyy'}}</p>
+                                        <p>
+                                            <strong>Program Fees Paid Until:</strong> 
+                                            {{contact.residencyDetails.programFeesPaidUntil | date:'MM/dd/yyyy'}}
+                                            <span class="fees-status late" 
+                                                  ng-if="isFeesLate(contact.residencyDetails.programFeesPaidUntil) && !isFeesCritical(contact.residencyDetails.programFeesPaidUntil)">
+                                                {{getDaysLate(contact.residencyDetails.programFeesPaidUntil)}} Days Late
+                                            </span>
+                                            <span class="fees-status critical" 
+                                                  ng-if="isFeesCritical(contact.residencyDetails.programFeesPaidUntil)">
+                                                {{getDaysLate(contact.residencyDetails.programFeesPaidUntil)}} Days Late
+                                            </span>
+                                        </p>
                                         <p><strong>Program Balance:</strong> {{contact.residencyDetails.programBalance | currency}}</p>
                                         <p><strong>Program Fee:</strong> {{contact.residencyDetails.programFee | currency}}</p>
                                         <p><strong>Discipler:</strong> {{contact.residencyDetails.discipler}}</p>
                                         <p><strong>Comments:</strong> {{contact.residencyDetails.comments}}</p>
+                                        <md-button class="md-primary md-raised" ng-click="viewPaymentDetails(contact)">
+                                            <md-icon>account_balance</md-icon>
+                                            View Payment History
+                                        </md-button>
                                     </div>
                                     <div ng-if="contact.type === 'PastResident'">
                                         <p><strong>Move In Date:</strong> {{contact.residencyDetails.moveInDate | date:'MM/dd/yyyy'}}</p>
                                         <p><strong>Discipler:</strong> {{contact.residencyDetails.discipler}}</p>
                                         <p><strong>Discharge Reason:</strong> {{contact.residencyDetails.dischargeReason}}</p>
                                         <p><strong>Comments:</strong> {{contact.residencyDetails.comments}}</p>
+                                        <md-button class="md-primary md-raised" ng-click="viewPaymentDetails(contact)">
+                                            <md-icon>account_balance</md-icon>
+                                            View Payment History
+                                        </md-button>
                                     </div>
                                 </div>
                                 <div ng-if="isEditing">
@@ -704,14 +747,14 @@
                                 </div>
                             </section>
 
-                            <!-- Comments Section (replacing Notes for all resident types) -->
-                            <section class="contact-section notes-section">
-                                <h3>{{['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type) ? 'Comments' : 'Notes'}}</h3>
+                            <!-- Comments Section (replacing Notes for all non-resident types) -->
+                            <section class="contact-section notes-section" 
+                                    ng-if="!['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type)">
+                                <h3>Notes</h3>
                                 <div class="info-row notes">
-                                    <span ng-if="!isEditing">{{['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type) ? contact.residencyDetails.comments : contact.notes || 'No notes added yet.'}}</span>
+                                    <span ng-if="!isEditing">{{contact.notes || 'No notes added yet.'}}</span>
                                     <md-input-container ng-if="isEditing" class="full-width">
-                                        <textarea ng-model="editableContact.residencyDetails.comments" rows="4" ng-if="['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type)"></textarea>
-                                        <textarea ng-model="editableContact.notes" rows="4" ng-if="!['Resident', 'ResidentPipeline', 'PastResident', 'DeclinedResident'].includes(contact.type)"></textarea>
+                                        <textarea ng-model="editableContact.notes" rows="4"></textarea>
                                     </md-input-container>
                                 </div>
                             </section>

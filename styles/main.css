@@ -1741,3 +1741,131 @@ md-card md-card-title {
     font-size: 13px;
     color: rgba(44, 85, 48, 0.7);
 }
+
+.residency-details .fees-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-left: 8px;
+    font-size: 12px;
+}
+
+.residency-details .fees-status.late {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+}
+
+.residency-details .fees-status.critical {
+    background-color: #c0392b;
+    color: white;
+    border: none;
+}
+
+.ledger-view .ledger-table .fees-status,
+.ledger-view .resident-ledger .fees-status,
+.ledger-view .overdue-payments .fees-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 12px;
+    text-align: center;
+    min-width: 100px;
+    margin: 0;
+}
+
+.ledger-view .ledger-table .fees-status.late,
+.ledger-view .resident-ledger .fees-status.late,
+.ledger-view .overdue-payments .fees-status.late {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+.ledger-view .ledger-table .fees-status.critical,
+.ledger-view .resident-ledger .fees-status.critical,
+.ledger-view .overdue-payments .fees-status.critical {
+    background-color: #c0392b !important;
+    color: white !important;
+}
+
+/* Payment Status Indicators */
+.fees-status {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    min-width: 100px !important;
+    margin: 0 !important;
+}
+
+.fees-status.late {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+.fees-status.critical {
+    background-color: #c0392b !important;
+    color: white !important;
+}
+
+/* Specific overrides for different views */
+.ledger-table td .fees-status,
+.resident-ledger td .fees-status,
+.payment-history-table td .fees-status {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    min-width: 100px !important;
+    margin: 0 !important;
+}
+
+.ledger-table td .fees-status.late,
+.resident-ledger td .fees-status.late,
+.payment-history-table td .fees-status.late {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+.ledger-table td .fees-status.critical,
+.resident-ledger td .fees-status.critical,
+.payment-history-table td .fees-status.critical {
+    background-color: #c0392b !important;
+    color: white !important;
+}
+
+/* Status indicators in summary cards */
+.resident-summary .summary-card .status,
+.payment-history-view .resident-summary .summary-card .status {
+    display: inline-block !important;
+    padding: 4px 12px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    margin-top: 8px !important;
+}
+
+.resident-summary .summary-card .status.status-on-time,
+.payment-history-view .resident-summary .summary-card .status.status-on-time {
+    background-color: #27ae60 !important;
+    color: white !important;
+}
+
+.resident-summary .summary-card .status.status-late,
+.payment-history-view .resident-summary .summary-card .status.status-late {
+    background-color: #f39c12 !important;
+    color: white !important;
+}
+
+.resident-summary .summary-card .status.status-critical,
+.payment-history-view .resident-summary .summary-card .status.status-critical {
+    background-color: #c0392b !important;
+    color: white !important;
+}
